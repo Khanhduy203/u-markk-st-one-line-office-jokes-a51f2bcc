@@ -9,15 +9,22 @@ const ENTRY =
   "My calendar finally had a free hour, so I booked a meeting with myself and immediately rescheduled it twice.";
 
 // Runtime guard: the gate requires UTF-8, 1-199 chars, not only
-// whitespace, exactly one line.
+// whitespace, exactly one line, no control characters, and no
+// leading/trailing whitespace.
 if (typeof ENTRY !== "string" || ENTRY.trim().length === 0) {
   throw new Error("entry must not be empty or only whitespace");
 }
-if (ENTRY.length > 199) {
-  throw new Error(`entry too long: ${ENTRY.length} chars (max 199)`);
+if (ENTRY.length < 1 || ENTRY.length > 199) {
+  throw new Error(`entry length out of range: ${ENTRY.length} chars (1-199)`);
 }
 if (ENTRY.includes("\n") || ENTRY.includes("\r")) {
   throw new Error("entry must be exactly one line");
+}
+if (/[\u0000-\u001f\u007f]/.test(ENTRY)) {
+  throw new Error("entry must not contain control characters");
+}
+if (ENTRY !== ENTRY.trim()) {
+  throw new Error("entry must not have leading or trailing whitespace");
 }
 
 const outDir = process.env.MAKEFUN_OUTPUT_DIR || "/output";
